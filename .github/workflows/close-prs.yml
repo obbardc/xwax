@@ -1,0 +1,32 @@
+name: Close pull requests with contributing link
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close PRs
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const contributing = "https://github.com/xwax/xwax/blob/master/CONTRIBUTING";
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `Thanks for the PR. Please read and follow our contributing guidelines first:\n\n${contributing}\n\nClosing this PR.`
+            });
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              state: "closed"
+            });
